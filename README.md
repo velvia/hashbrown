@@ -1,3 +1,5 @@
+NOTE: This is a fork of hashbrown which defaults to the std lib's System allocator.
+
 hashbrown
 =========
 
