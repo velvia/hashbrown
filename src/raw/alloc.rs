@@ -1,4 +1,4 @@
-pub(crate) use self::inner::{do_alloc, Allocator, Global};
+pub(crate) use self::inner::{do_alloc, Allocator, System};
 
 #[cfg(feature = "nightly")]
 mod inner {
@@ -30,8 +30,9 @@ mod inner {
 
 #[cfg(not(feature = "nightly"))]
 mod inner {
-    use crate::alloc::alloc::{alloc, dealloc, Layout};
+    use crate::alloc::alloc::Layout;
     use core::ptr::NonNull;
+    use std::alloc::{GlobalAlloc, System as RustSystem};
 
     #[allow(clippy::missing_safety_doc)] // not exposed outside of this crate
     pub unsafe trait Allocator {
@@ -40,21 +41,21 @@ mod inner {
     }
 
     #[derive(Copy, Clone)]
-    pub struct Global;
-    unsafe impl Allocator for Global {
+    pub struct System;
+    unsafe impl Allocator for System {
         #[inline]
         fn allocate(&self, layout: Layout) -> Result<NonNull<u8>, ()> {
-            unsafe { NonNull::new(alloc(layout)).ok_or(()) }
+            unsafe { NonNull::new(RustSystem.alloc(layout)).ok_or(()) }
         }
         #[inline]
         unsafe fn deallocate(&self, ptr: NonNull<u8>, layout: Layout) {
-            dealloc(ptr.as_ptr(), layout);
+            RustSystem.dealloc(ptr.as_ptr(), layout);
         }
     }
-    impl Default for Global {
+    impl Default for System {
         #[inline]
         fn default() -> Self {
-            Global
+            System
         }
     }
 

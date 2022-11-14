@@ -1,4 +1,4 @@
-use crate::raw::{Allocator, Bucket, Global, RawDrain, RawIntoIter, RawIter, RawTable};
+use crate::raw::{Allocator, Bucket, RawDrain, RawIntoIter, RawIter, RawTable, System};
 use crate::{Equivalent, TryReserveError};
 use core::borrow::Borrow;
 use core::fmt::{self, Debug};
@@ -185,7 +185,7 @@ pub enum DefaultHashBuilder {}
 ///     .iter().cloned().collect();
 /// // use the values stored in map
 /// ```
-pub struct HashMap<K, V, S = DefaultHashBuilder, A: Allocator + Clone = Global> {
+pub struct HashMap<K, V, S = DefaultHashBuilder, A: Allocator + Clone = System> {
     pub(crate) hash_builder: S,
     pub(crate) table: RawTable<(K, V), A>,
 }
@@ -2429,7 +2429,7 @@ impl<K, V> IterMut<'_, K, V> {
 /// assert_eq!(iter.next(), None);
 /// assert_eq!(iter.next(), None);
 /// ```
-pub struct IntoIter<K, V, A: Allocator + Clone = Global> {
+pub struct IntoIter<K, V, A: Allocator + Clone = System> {
     inner: RawIntoIter<(K, V), A>,
 }
 
@@ -2473,7 +2473,7 @@ impl<K, V, A: Allocator + Clone> IntoIter<K, V, A> {
 /// assert_eq!(keys.next(), None);
 /// assert_eq!(keys.next(), None);
 /// ```
-pub struct IntoKeys<K, V, A: Allocator + Clone = Global> {
+pub struct IntoKeys<K, V, A: Allocator + Clone = System> {
     inner: IntoIter<K, V, A>,
 }
 
@@ -2535,7 +2535,7 @@ impl<K: Debug, V: Debug, A: Allocator + Clone> fmt::Debug for IntoKeys<K, V, A> 
 /// assert_eq!(values.next(), None);
 /// assert_eq!(values.next(), None);
 /// ```
-pub struct IntoValues<K, V, A: Allocator + Clone = Global> {
+pub struct IntoValues<K, V, A: Allocator + Clone = System> {
     inner: IntoIter<K, V, A>,
 }
 
@@ -2693,7 +2693,7 @@ impl<K, V: Debug> fmt::Debug for Values<'_, K, V> {
 /// assert_eq!(drain_iter.next(), None);
 /// assert_eq!(drain_iter.next(), None);
 /// ```
-pub struct Drain<'a, K, V, A: Allocator + Clone = Global> {
+pub struct Drain<'a, K, V, A: Allocator + Clone = System> {
     inner: RawDrain<'a, (K, V), A>,
 }
 
@@ -2739,7 +2739,7 @@ impl<K, V, A: Allocator + Clone> Drain<'_, K, V, A> {
 ///
 /// assert_eq!(map.len(), 1);
 /// ```
-pub struct DrainFilter<'a, K, V, F, A: Allocator + Clone = Global>
+pub struct DrainFilter<'a, K, V, F, A: Allocator + Clone = System>
 where
     F: FnMut(&K, &mut V) -> bool,
 {
@@ -2901,7 +2901,7 @@ pub struct ValuesMut<'a, K, V> {
 ///
 /// assert_eq!(map.len(), 6);
 /// ```
-pub struct RawEntryBuilderMut<'a, K, V, S, A: Allocator + Clone = Global> {
+pub struct RawEntryBuilderMut<'a, K, V, S, A: Allocator + Clone = System> {
     map: &'a mut HashMap<K, V, S, A>,
 }
 
@@ -2989,7 +2989,7 @@ pub struct RawEntryBuilderMut<'a, K, V, S, A: Allocator + Clone = Global> {
 /// vec.sort_unstable();
 /// assert_eq!(vec, [('a', 10), ('b', 20), ('c', 30), ('d', 40), ('e', 50), ('f', 60)]);
 /// ```
-pub enum RawEntryMut<'a, K, V, S, A: Allocator + Clone = Global> {
+pub enum RawEntryMut<'a, K, V, S, A: Allocator + Clone = System> {
     /// An occupied entry.
     ///
     /// # Examples
@@ -3080,7 +3080,7 @@ pub enum RawEntryMut<'a, K, V, S, A: Allocator + Clone = Global> {
 /// assert_eq!(map.get(&"b"), None);
 /// assert_eq!(map.len(), 1);
 /// ```
-pub struct RawOccupiedEntryMut<'a, K, V, S, A: Allocator + Clone = Global> {
+pub struct RawOccupiedEntryMut<'a, K, V, S, A: Allocator + Clone = System> {
     elem: Bucket<(K, V)>,
     table: &'a mut RawTable<(K, V), A>,
     hash_builder: &'a S,
@@ -3151,7 +3151,7 @@ where
 /// }
 /// assert!(map[&"c"] == 30 && map.len() == 3);
 /// ```
-pub struct RawVacantEntryMut<'a, K, V, S, A: Allocator + Clone = Global> {
+pub struct RawVacantEntryMut<'a, K, V, S, A: Allocator + Clone = System> {
     table: &'a mut RawTable<(K, V), A>,
     hash_builder: &'a S,
 }
@@ -3190,7 +3190,7 @@ pub struct RawVacantEntryMut<'a, K, V, S, A: Allocator + Clone = Global> {
 ///     assert_eq!(map.raw_entry().from_key_hashed_nocheck(hash, &k), kv);
 /// }
 /// ```
-pub struct RawEntryBuilder<'a, K, V, S, A: Allocator + Clone = Global> {
+pub struct RawEntryBuilder<'a, K, V, S, A: Allocator + Clone = System> {
     map: &'a HashMap<K, V, S, A>,
 }
 
@@ -4213,7 +4213,7 @@ impl<K, V, S, A: Allocator + Clone> Debug for RawEntryBuilder<'_, K, V, S, A> {
 /// vec.sort_unstable();
 /// assert_eq!(vec, [("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5), ("f", 6)]);
 /// ```
-pub enum Entry<'a, K, V, S, A = Global>
+pub enum Entry<'a, K, V, S, A = System>
 where
     A: Allocator + Clone,
 {
@@ -4297,7 +4297,7 @@ impl<K: Debug, V: Debug, S, A: Allocator + Clone> Debug for Entry<'_, K, V, S, A
 /// assert_eq!(map.get(&"c"), None);
 /// assert_eq!(map.len(), 2);
 /// ```
-pub struct OccupiedEntry<'a, K, V, S, A: Allocator + Clone = Global> {
+pub struct OccupiedEntry<'a, K, V, S, A: Allocator + Clone = System> {
     hash: u64,
     key: Option<K>,
     elem: Bucket<(K, V)>,
@@ -4360,7 +4360,7 @@ impl<K: Debug, V: Debug, S, A: Allocator + Clone> Debug for OccupiedEntry<'_, K,
 /// }
 /// assert!(map[&"b"] == 20 && map.len() == 2);
 /// ```
-pub struct VacantEntry<'a, K, V, S, A: Allocator + Clone = Global> {
+pub struct VacantEntry<'a, K, V, S, A: Allocator + Clone = System> {
     hash: u64,
     key: K,
     table: &'a mut HashMap<K, V, S, A>,
@@ -4424,7 +4424,7 @@ impl<K: Debug, V, S, A: Allocator + Clone> Debug for VacantEntry<'_, K, V, S, A>
 /// }
 /// assert_eq!(map.len(), 6);
 /// ```
-pub enum EntryRef<'a, 'b, K, Q: ?Sized, V, S, A = Global>
+pub enum EntryRef<'a, 'b, K, Q: ?Sized, V, S, A = System>
 where
     A: Allocator + Clone,
 {
@@ -4537,7 +4537,7 @@ impl<'a, K: Borrow<Q>, Q: ?Sized> AsRef<Q> for KeyOrRef<'a, K, Q> {
 /// assert_eq!(map.get("c"), None);
 /// assert_eq!(map.len(), 2);
 /// ```
-pub struct OccupiedEntryRef<'a, 'b, K, Q: ?Sized, V, S, A: Allocator + Clone = Global> {
+pub struct OccupiedEntryRef<'a, 'b, K, Q: ?Sized, V, S, A: Allocator + Clone = System> {
     hash: u64,
     key: Option<KeyOrRef<'b, K, Q>>,
     elem: Bucket<(K, V)>,
@@ -4604,7 +4604,7 @@ impl<K: Borrow<Q>, Q: ?Sized + Debug, V: Debug, S, A: Allocator + Clone> Debug
 /// }
 /// assert!(map["b"] == 20 && map.len() == 2);
 /// ```
-pub struct VacantEntryRef<'a, 'b, K, Q: ?Sized, V, S, A: Allocator + Clone = Global> {
+pub struct VacantEntryRef<'a, 'b, K, Q: ?Sized, V, S, A: Allocator + Clone = System> {
     hash: u64,
     key: KeyOrRef<'b, K, Q>,
     table: &'a mut HashMap<K, V, S, A>,
@@ -4642,7 +4642,7 @@ impl<K: Borrow<Q>, Q: ?Sized + Debug, V, S, A: Allocator + Clone> Debug
 /// }
 /// assert_eq!(map[&"a"], 100);
 /// ```
-pub struct OccupiedError<'a, K, V, S, A: Allocator + Clone = Global> {
+pub struct OccupiedError<'a, K, V, S, A: Allocator + Clone = System> {
     /// The entry in the map that was already occupied.
     pub entry: OccupiedEntry<'a, K, V, S, A>,
     /// The value which was not inserted, because the entry was already occupied.

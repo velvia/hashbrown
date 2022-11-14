@@ -9,7 +9,9 @@
 //! [here]: https://github.com/abseil/abseil-cpp/blob/master/absl/container/internal/raw_hash_set.h
 //! [CppCon talk]: https://www.youtube.com/watch?v=ncHmEUmJZf4
 
-#![no_std]
+// Note(velvia): This is a version of hashbrown built to default to std lib's System allocator,
+//               so that this package can be used in custom memory allocators.
+// #![no_std]
 #![cfg_attr(
     feature = "nightly",
     feature(

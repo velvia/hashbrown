@@ -9,7 +9,7 @@ use core::mem;
 use core::ops::{BitAnd, BitOr, BitXor, Sub};
 
 use super::map::{self, ConsumeAllOnDrop, DefaultHashBuilder, DrainFilterInner, HashMap, Keys};
-use crate::raw::{Allocator, Global};
+use crate::raw::{Allocator, System};
 
 // Future Optimization (FIXME!)
 // =============================
@@ -113,7 +113,7 @@ use crate::raw::{Allocator, Global};
 /// [`HashMap`]: struct.HashMap.html
 /// [`PartialEq`]: https://doc.rust-lang.org/std/cmp/trait.PartialEq.html
 /// [`RefCell`]: https://doc.rust-lang.org/std/cell/struct.RefCell.html
-pub struct HashSet<T, S = DefaultHashBuilder, A: Allocator + Clone = Global> {
+pub struct HashSet<T, S = DefaultHashBuilder, A: Allocator + Clone = System> {
     pub(crate) map: HashMap<T, (), S, A>,
 }
 
@@ -431,7 +431,7 @@ impl<T, S, A: Allocator + Clone> HashSet<T, S, A> {
     }
 }
 
-impl<T, S> HashSet<T, S, Global> {
+impl<T, S> HashSet<T, S, System> {
     /// Creates a new empty hash set which will use the given hasher to hash
     /// keys.
     ///
@@ -1530,7 +1530,7 @@ pub struct Iter<'a, K> {
 ///
 /// [`HashSet`]: struct.HashSet.html
 /// [`into_iter`]: struct.HashSet.html#method.into_iter
-pub struct IntoIter<K, A: Allocator + Clone = Global> {
+pub struct IntoIter<K, A: Allocator + Clone = System> {
     iter: map::IntoIter<K, (), A>,
 }
 
@@ -1541,7 +1541,7 @@ pub struct IntoIter<K, A: Allocator + Clone = Global> {
 ///
 /// [`HashSet`]: struct.HashSet.html
 /// [`drain`]: struct.HashSet.html#method.drain
-pub struct Drain<'a, K, A: Allocator + Clone = Global> {
+pub struct Drain<'a, K, A: Allocator + Clone = System> {
     iter: map::Drain<'a, K, (), A>,
 }
 
@@ -1552,7 +1552,7 @@ pub struct Drain<'a, K, A: Allocator + Clone = Global> {
 ///
 /// [`drain_filter`]: struct.HashSet.html#method.drain_filter
 /// [`HashSet`]: struct.HashSet.html
-pub struct DrainFilter<'a, K, F, A: Allocator + Clone = Global>
+pub struct DrainFilter<'a, K, F, A: Allocator + Clone = System>
 where
     F: FnMut(&K) -> bool,
 {
@@ -1567,7 +1567,7 @@ where
 ///
 /// [`HashSet`]: struct.HashSet.html
 /// [`intersection`]: struct.HashSet.html#method.intersection
-pub struct Intersection<'a, T, S, A: Allocator + Clone = Global> {
+pub struct Intersection<'a, T, S, A: Allocator + Clone = System> {
     // iterator of the first set
     iter: Iter<'a, T>,
     // the second set
@@ -1581,7 +1581,7 @@ pub struct Intersection<'a, T, S, A: Allocator + Clone = Global> {
 ///
 /// [`HashSet`]: struct.HashSet.html
 /// [`difference`]: struct.HashSet.html#method.difference
-pub struct Difference<'a, T, S, A: Allocator + Clone = Global> {
+pub struct Difference<'a, T, S, A: Allocator + Clone = System> {
     // iterator of the first set
     iter: Iter<'a, T>,
     // the second set
@@ -1595,7 +1595,7 @@ pub struct Difference<'a, T, S, A: Allocator + Clone = Global> {
 ///
 /// [`HashSet`]: struct.HashSet.html
 /// [`symmetric_difference`]: struct.HashSet.html#method.symmetric_difference
-pub struct SymmetricDifference<'a, T, S, A: Allocator + Clone = Global> {
+pub struct SymmetricDifference<'a, T, S, A: Allocator + Clone = System> {
     iter: Chain<Difference<'a, T, S, A>, Difference<'a, T, S, A>>,
 }
 
@@ -1606,7 +1606,7 @@ pub struct SymmetricDifference<'a, T, S, A: Allocator + Clone = Global> {
 ///
 /// [`HashSet`]: struct.HashSet.html
 /// [`union`]: struct.HashSet.html#method.union
-pub struct Union<'a, T, S, A: Allocator + Clone = Global> {
+pub struct Union<'a, T, S, A: Allocator + Clone = System> {
     iter: Chain<Iter<'a, T>, Difference<'a, T, S, A>>,
 }
 
@@ -2022,7 +2022,7 @@ where
 /// vec.sort_unstable();
 /// assert_eq!(vec, ["a", "b", "c", "d", "e"]);
 /// ```
-pub enum Entry<'a, T, S, A = Global>
+pub enum Entry<'a, T, S, A = System>
 where
     A: Allocator + Clone,
 {
@@ -2102,7 +2102,7 @@ impl<T: fmt::Debug, S, A: Allocator + Clone> fmt::Debug for Entry<'_, T, S, A> {
 /// assert_eq!(set.get(&"c"), None);
 /// assert_eq!(set.len(), 2);
 /// ```
-pub struct OccupiedEntry<'a, T, S, A: Allocator + Clone = Global> {
+pub struct OccupiedEntry<'a, T, S, A: Allocator + Clone = System> {
     inner: map::OccupiedEntry<'a, T, (), S, A>,
 }
 
@@ -2140,7 +2140,7 @@ impl<T: fmt::Debug, S, A: Allocator + Clone> fmt::Debug for OccupiedEntry<'_, T,
 /// }
 /// assert!(set.contains("b") && set.len() == 2);
 /// ```
-pub struct VacantEntry<'a, T, S, A: Allocator + Clone = Global> {
+pub struct VacantEntry<'a, T, S, A: Allocator + Clone = System> {
     inner: map::VacantEntry<'a, T, (), S, A>,
 }
 

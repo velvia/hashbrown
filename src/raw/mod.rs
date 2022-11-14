@@ -33,7 +33,7 @@ cfg_if! {
 }
 
 mod alloc;
-pub(crate) use self::alloc::{do_alloc, Allocator, Global};
+pub(crate) use self::alloc::{do_alloc, Allocator, System};
 
 mod bitmask;
 
@@ -367,7 +367,7 @@ impl<T> Bucket<T> {
 }
 
 /// A raw hash table with an unsafe API.
-pub struct RawTable<T, A: Allocator + Clone = Global> {
+pub struct RawTable<T, A: Allocator + Clone = System> {
     table: RawTableInner<A>,
     // Tell dropck that we own instances of T.
     marker: PhantomData<T>,
@@ -393,7 +393,7 @@ struct RawTableInner<A> {
     alloc: A,
 }
 
-impl<T> RawTable<T, Global> {
+impl<T> RawTable<T, System> {
     /// Creates a new empty hash table without allocating any memory.
     ///
     /// In effect this returns a table with exactly 1 bucket. However we can
@@ -402,7 +402,7 @@ impl<T> RawTable<T, Global> {
     #[inline]
     pub const fn new() -> Self {
         Self {
-            table: RawTableInner::new_in(Global),
+            table: RawTableInner::new_in(System),
             marker: PhantomData,
         }
     }
@@ -411,13 +411,13 @@ impl<T> RawTable<T, Global> {
     /// for inserting the given number of elements without reallocating.
     #[cfg(feature = "raw")]
     pub fn try_with_capacity(capacity: usize) -> Result<Self, TryReserveError> {
-        Self::try_with_capacity_in(capacity, Global)
+        Self::try_with_capacity_in(capacity, System)
     }
 
     /// Allocates a new hash table with at least enough capacity for inserting
     /// the given number of elements without reallocating.
     pub fn with_capacity(capacity: usize) -> Self {
-        Self::with_capacity_in(capacity, Global)
+        Self::with_capacity_in(capacity, System)
     }
 }
 
@@ -2220,7 +2220,7 @@ impl<T> ExactSizeIterator for RawIter<T> {}
 impl<T> FusedIterator for RawIter<T> {}
 
 /// Iterator which consumes a table and returns elements.
-pub struct RawIntoIter<T, A: Allocator + Clone = Global> {
+pub struct RawIntoIter<T, A: Allocator + Clone = System> {
     iter: RawIter<T>,
     allocation: Option<(NonNull<u8>, Layout)>,
     marker: PhantomData<T>,
@@ -2296,7 +2296,7 @@ impl<T, A: Allocator + Clone> ExactSizeIterator for RawIntoIter<T, A> {}
 impl<T, A: Allocator + Clone> FusedIterator for RawIntoIter<T, A> {}
 
 /// Iterator which consumes elements without freeing the table storage.
-pub struct RawDrain<'a, T, A: Allocator + Clone = Global> {
+pub struct RawDrain<'a, T, A: Allocator + Clone = System> {
     iter: RawIter<T>,
 
     // The table is moved into the iterator for the duration of the drain. This
@@ -2374,7 +2374,7 @@ impl<T, A: Allocator + Clone> FusedIterator for RawDrain<'_, T, A> {}
 /// `RawTable` only stores 7 bits of the hash value, so this iterator may return
 /// items that have a hash value different than the one provided. You should
 /// always validate the returned values before using them.
-pub struct RawIterHash<'a, T, A: Allocator + Clone = Global> {
+pub struct RawIterHash<'a, T, A: Allocator + Clone = System> {
     inner: RawIterHashInner<'a, A>,
     _marker: PhantomData<T>,
 }
